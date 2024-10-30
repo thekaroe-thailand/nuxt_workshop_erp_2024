@@ -70,7 +70,10 @@
         })
 
         if (response.status === 200) {
-          console.log(response.data)
+          localStorage.setItem(config.token, response.data.token);
+          localStorage.setItem('nuxt_erp_user_id', response.data.id);
+
+          navigateTo('/home');
         } else {
           Swal.fire({
             icon: 'error',
