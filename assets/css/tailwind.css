@@ -67,7 +67,7 @@
   }
 
   .table thead th {
-    @apply px-3 py-2 justify-start align-middle text-left;
+    @apply px-3 py-2;
   }
 
   .table tbody tr {
@@ -75,7 +75,7 @@
   }
 
   .table tbody tr td {
-    @apply px-3 py-2 justify-start;
+    @apply px-3 py-2;
   }
 
   .table tbody tr:last-child {
@@ -94,5 +94,13 @@
   /* active menu */
   .active {
     @apply bg-gray-400 text-gray-900 hover:bg-gray-400 hover:text-gray-900;
+  }
+
+  .title {
+    @apply rounded-tl-xl rounded-tr-xl mb-3 pb-3 bg-gradient-to-b from-gray-800 to-gray-500 text-white p-4;
+  }
+
+  .text-red {
+    @apply text-red-500;
   }
 }

@@ -93,8 +93,8 @@ const remove = async (id) => {
 </script>
 
 <template>
-    <div>ประเภทสินค้า</div>
-    <div class="mt-3">
+    <div class="title">ประเภทสินค้า</div>
+    <div class="p-4">
         <button class="btn btn-primary" @click="showModal = true">
             <i class="fa fa-plus"></i>
             เพิ่มประเภทสินค้า
@@ -103,8 +103,8 @@ const remove = async (id) => {
         <table class="table table-bordered mt-3">
             <thead>
                 <tr>
-                    <th>ชื่อ</th>
-                    <th>หมายเหตุ</th>
+                    <th class="text-left">ชื่อ</th>
+                    <th class="text-left">หมายเหตุ</th>
                     <th width="110px"></th>
                 </tr>
             </thead>
