@@ -2,8 +2,33 @@
 import { ref } from 'vue';
 import Swal from 'sweetalert2';
 import config from '@/config';
+import axios from 'axios';
 
 const activeMenu = ref('');
+const name = ref('');
+const level = ref('');
+
+onMounted(async () => {
+    fetchData();
+});
+
+const fetchData = async () => {
+    try {
+        const headers = {
+            Authorization: `Bearer ${localStorage.getItem(config.token)}`
+        };
+
+        const res = await axios.get(`${config.apiServer}/api/user/info`, { headers });
+        name.value = res.data.result.name;
+        level.value = res.data.result.level;
+    } catch (error) {
+        Swal.fire({
+            icon: 'error',
+            title: 'error',
+            text: error.message
+        });
+    }
+}
 
 const toggleMenu = (menu) => {
     activeMenu.value = menu;
@@ -30,8 +55,10 @@ const signOut = async () => {
     <div>
         <div class="sidebar-title">NuxtERP V.2024</div>
         <div class="sidebar-avater">
-            <img src="https://via.placeholder.com/150" alt="avatar" class="w-10 h-10 rounded-full mx-auto" />
-            <div class="text-center text-white text-sm mt-3">Admin System</div>
+            <div class="text-center">
+                <i class="fa fa-user text-2xl text-gray-800 py-2 w-[40px] h-[40px] rounded-lg bg-gray-200"></i>
+            </div>
+            <div class="text-center text-gray-100 text-md mt-3">{{ name }} : {{ level }}</div>
             <div class="text-center mt-3 flex justify-center gap-2">
                 <button class="btn btn-danger text-xs" @click="signOut">
                     <i class="fa fa-sign-out mr-1"></i>
