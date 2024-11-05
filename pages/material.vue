@@ -3,6 +3,7 @@
 import Swal from 'sweetalert2';
 import axios from 'axios';
 import config from '@/config';
+import dayjs from 'dayjs';
 
 definePageMeta({
     layout: 'admin',
@@ -24,6 +25,10 @@ const stockMaterialQuantity = ref(0);
 const stockMaterialPrice = ref(0);
 const stockMaterialRemark = ref('');
 const stockMaterialId = ref('');
+
+// modal stock material history
+const showModalStockMaterialHistory = ref(false);
+const listStockMaterials = ref([]);
 
 onMounted(async () => {
     await fetchData();
@@ -169,6 +174,53 @@ const selectedStockMaterial = () => {
     stockMaterialPrice.value = material.price;
     stockMaterialId.value = material.id;
 }
+
+const fetchDataStockMaterial = async () => {
+    try {
+        const res = await axios.get(`${config.apiServer}/api/stockMaterial/list`);
+        listStockMaterials.value = res.data.results;
+    } catch (e) {
+        Swal.fire({
+            icon: 'error',
+            title: 'error',
+            text: e.message
+        });
+    }
+}
+
+const openModalStockMaterialHistory = async (material) => {
+    showModalStockMaterialHistory.value = true;
+    await fetchDataStockMaterial();
+}
+
+const closeModalStockMaterialHistory = () => {
+    showModalStockMaterialHistory.value = false;
+}
+
+const removeStockMaterial = async (id) => {
+    try {
+        const button = await Swal.fire({
+            icon: 'warning',
+            title: 'ยืนยันการลบ',
+            text: 'คุณต้องการลบการรับเข้าสต้อกนี้หรือไม่?',
+            showCancelButton: true,
+            showConfirmButton: true
+        });
+
+        if (button.isConfirmed) {
+            await axios.delete(`${config.apiServer}/api/stockMaterial/remove/${id}`);
+            fetchDataStockMaterial();
+            fetchData();
+        }
+    } catch (error) {
+        Swal.fire({
+            icon: 'error',
+            title: 'error',
+            text: error.message
+        });
+    }
+}
+
 </script>
 
 <template>
@@ -182,7 +234,7 @@ const selectedStockMaterial = () => {
             <i class="fa fa-arrow-circle-down mr-1"></i>
             รับเข้าสต้อก
         </button>
-        <button class="btn">
+        <button class="btn" @click="openModalStockMaterialHistory">
             <i class="fa fa-history mr-1"></i>
             ประวัติการรับเข้าสต้องการ
         </button>
@@ -260,5 +312,38 @@ const selectedStockMaterial = () => {
             <i class="fa fa-check mr-1"></i>
             บันทึก
         </button>
+    </Modal>
+
+    <Modal v-if="showModalStockMaterialHistory" title="ประวัติการรับเข้าสต้องการ"
+        @close="closeModalStockMaterialHistory" size="lg">
+        <table class="table mt-3">
+            <thead>
+                <tr>
+                    <th width="200px" class="text-left">วัสดุ, ส่วนผสม</th>
+                    <th width="100px" class="text-right">จำนวน</th>
+                    <th width="100px" class="text-right">ราคา</th>
+                    <th width="150px" class="text-left">วันที่รับเข้า</th>
+                    <th width="55px"></th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr v-for="stockMaterial in listStockMaterials" :key="stockMaterial.id">
+                    <td>
+                        <div>{{ stockMaterial.Material.name }}</div>
+                        <div v-if="stockMaterial.remark" class="text-red-500">
+                            {{ stockMaterial.remark }}
+                        </div>
+                    </td>
+                    <td class="text-right">{{ stockMaterial.quantity }}</td>
+                    <td class="text-right">{{ stockMaterial.price.toLocaleString('th-TH') }}</td>
+                    <td>{{ dayjs(stockMaterial.created_at).format('DD/MM/YYYY HH:mm') }}</td>
+                    <td class="text-center">
+                        <button class="btn btn-sm btn-danger" @click="removeStockMaterial(stockMaterial.id)">
+                            <i class="fa fa-times"></i>
+                        </button>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
     </Modal>
 </template>
