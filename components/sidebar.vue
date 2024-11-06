@@ -101,8 +101,8 @@ const signOut = async () => {
                 <i class="fa fa-box"></i>
                 บรรจุภัณฑ์
             </NuxtLink>
-            <NuxtLink class="nav-link" :class="{ 'active': activeMenu === 'formula' }" to="/formula"
-                @click="toggleMenu('formula')">
+            <NuxtLink class="nav-link" :class="{ 'active': activeMenu === 'formular' }" to="/formular"
+                @click="toggleMenu('formular')">
                 <i class="fa fa-receipt"></i>
                 สูตรสินค้า
             </NuxtLink>
