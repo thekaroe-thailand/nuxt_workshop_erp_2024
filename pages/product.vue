@@ -9,9 +9,13 @@ definePageMeta({
 
 const showModalAddProduct = ref(false);
 const products = ref([]);
+const packagings = ref([]);
+const productTypes = ref([]);
 const id = ref('');
 const name = ref('');
 const remark = ref('');
+const selectedPackagingId = ref('');
+const selectedProductTypeId = ref('');
 
 // modal formular
 const showModalFormular = ref(false);
@@ -20,6 +24,7 @@ const quantity = ref(0);
 const remarkFormular = ref('');
 const selectedProductName = ref('');
 const selectedProductId = ref('');
+const selectedFormularId = ref('');
 const materials = ref([]);
 const formulars = ref([]);
 
@@ -77,7 +82,9 @@ const save = async () => {
     try {
         const payload = {
             name: name.value,
-            remark: remark.value
+            remark: remark.value,
+            packagingId: selectedPackagingId.value,
+            productTypeId: selectedProductTypeId.value
         };
 
         if (id.value === '') {
@@ -102,6 +109,18 @@ const fetchData = async () => {
     try {
         const response = await axios.get(`${config.apiServer}/api/product/list`);
         products.value = response.data.results;
+
+        if (packagings.value.length === 0) {
+            const response = await axios.get(`${config.apiServer}/api/packaging/list`);
+            packagings.value = response.data.results;
+            selectedPackagingId.value = packagings.value[0].id;
+        }
+
+        if (productTypes.value.length === 0) {
+            const response = await axios.get(`${config.apiServer}/api/productType/list`);
+            productTypes.value = response.data.results;
+            selectedProductTypeId.value = productTypes.value[0].id;
+        }
     } catch (error) {
         Swal.fire({
             icon: 'error',
@@ -155,12 +174,48 @@ const saveFormular = async () => {
             remark: remarkFormular.value
         };
 
-        await axios.post(`${config.apiServer}/api/productFormular/create`, payload);
+        if (selectedFormularId.value === '') {
+            await axios.post(`${config.apiServer}/api/productFormular/create`, payload);
+        } else {
+            await axios.put(`${config.apiServer}/api/productFormular/update/${selectedFormularId.value}`, payload);
+            selectedFormularId.value = '';
+        }
+
         await fetchDataFormular(selectedProductId.value);
 
         quantity.value = 0;
         remarkFormular.value = '';
         materialId.value = materials.value[0].id;
+    } catch (error) {
+        Swal.fire({
+            icon: 'error',
+            title: 'error',
+            text: error.message
+        });
+    }
+}
+
+const editFormular = (formular) => {
+    selectedFormularId.value = formular.id;
+    materialId.value = formular.materialId;
+    quantity.value = formular.quantity;
+    remarkFormular.value = formular.remark;
+}
+
+const removeFormular = async (id) => {
+    try {
+        const button = await Swal.fire({
+            icon: 'warning',
+            title: 'ยืนยันการลบ',
+            text: 'คุณต้องการลบสูตรนี้หรือไม่?',
+            showCancelButton: true,
+            showCancelButton: true
+        });
+
+        if (button.isConfirmed) {
+            await axios.delete(`${config.apiServer}/api/productFormular/remove/${id}`);
+            await fetchDataFormular(selectedProductId.value);
+        }
     } catch (error) {
         Swal.fire({
             icon: 'error',
@@ -183,14 +238,19 @@ const saveFormular = async () => {
             <thead>
                 <tr>
                     <th class="text-left" width="200px">ชื่อ</th>
-                    <th class="text-left">หมายเหตุ</th>
+                    <th class="text-left">บรรจุภัณฑ์</th>
+                    <th class="text-left">ประเภทสินค้า</th>
                     <th width="170px"></th>
                 </tr>
             </thead>
             <tbody>
                 <tr v-for="product in products" :key="product.id">
-                    <td class="text-left">{{ product.name }}</td>
-                    <td class="text-left">{{ product.remark }}</td>
+                    <td class="text-left">
+                        <div>{{ product.name }}</div>
+                        <div v-if="product.remark" class="text-sm text-red-500">*** {{ product.remark }}</div>
+                    </td>
+                    <td class="text-left">{{ product.Packaging?.name }}</td>
+                    <td class="text-left">{{ product.ProductType?.name }}</td>
                     <td class="text-center">
                         <button class="btn mr-1" @click="openModalFormular(product.id)">
                             <i class="fa fa-paperclip"></i>
@@ -214,6 +274,20 @@ const saveFormular = async () => {
 
         <div class="mt-3">หมายเหตุ</div>
         <input type="text" v-model="remark" class="form-control" />
+
+        <div class="mt-3">ประเภทสินค้า</div>
+        <select v-model="selectedProductTypeId" class="form-control">
+            <option v-for="productType in productTypes" :key="productType.id" :value="productType.id">
+                {{ productType.name }}
+            </option>
+        </select>
+
+        <div class="mt-3">บรรจุภัณฑ์</div>
+        <select v-model="selectedPackagingId" class="form-control">
+            <option v-for="packaging in packagings" :key="packaging.id" :value="packaging.id">
+                {{ packaging.name }}
+            </option>
+        </select>
 
         <button class="btn btn-primary mt-3" @click="save">
             <i class="fa-solid fa-check me-1"></i>
