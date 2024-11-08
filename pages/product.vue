@@ -224,6 +224,7 @@ const removeFormular = async (id) => {
         });
     }
 }
+
 </script>
 
 <template>
